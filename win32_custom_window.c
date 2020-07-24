@@ -1,6 +1,13 @@
 #include <windows.h>
+#include <stdio.h>
 
-CustomWindowProc(   HWND    hwnd,
+int main()
+{
+    printf("Hello, world!");
+}
+
+
+/*CustomWindowProc(   HWND    hwnd,
                     UINT    uMsg,
                     WPARAM  wParam,
                     LPARAM  lParam)
@@ -31,3 +38,4 @@ int WinMain(HINSTANCE   hInstance,
 
     ATOM atom = RegisterClassW(&window_class);
 }
+*/
