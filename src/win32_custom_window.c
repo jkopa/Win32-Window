@@ -4,6 +4,7 @@
 int main()
 {
     printf("Hello, world!");
+    return 0;
 }
 
 
@@ -23,10 +24,11 @@ int main()
     return result;
 };
 
-int WinMain(HINSTANCE   hInstance,
-            HINSTANCE   hPrevInstance,
-            LPSTR       pCmdLine,
-            int         nCmdShow)
+int CALLBACK 
+WinMain(HINSTANCE   hInstance,
+        HINSTANCE   hPrevInstance,
+        LPSTR       pCmdLine,
+        int         nCmdShow)
 {
     #define WINDOW_CLASS L"mainWindow";
 
