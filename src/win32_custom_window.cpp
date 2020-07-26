@@ -8,10 +8,6 @@ MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
 // TODO(jarek): WIP case statements to handle messages from windows
     switch(message)
     {
-        case WM_CREATE:
-        {
-            OutputDebugStringA("WM_CREATE\n");
-        } break;
         case WM_SIZE:
         {
             OutputDebugStringA("WM_SIZE\n");
@@ -26,8 +22,22 @@ MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
         } break;
         case WM_ACTIVATEAPP:
         {
-            OutputDebugStringA("Wm_ACTIVATEAPP\n");
+            OutputDebugStringA("WM_ACTIVATEAPP\n");
         }break;
+        case WM_PAINT:
+        {
+            // TODO(jarek):research PatBlt()
+            PAINTSTRUCT paint;
+            HDC deviceConstext = BeginPaint(window, &paint);
+            LONG x = paint.rcPaint.left;
+            LONG y = paint.rcPaint.top;
+            LONG height = paint.rcPaint.bottom - paint.rcPaint.top;
+            LONG width = paint.rcPaint.right -paint.rcPaint.left;
+            PatBlt(deviceConstext, x, y, width, height, BLACKNESS);
+            EndPaint(window, &paint);
+            OutputDebugStringA("WM_PAINT\n");
+        }break;
+
         default:
         {
             //OutputDebugStringA("Default\n");
