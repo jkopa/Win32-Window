@@ -1,10 +1,7 @@
 #include <windows.h>
 
 LRESULT CALLBACK
-MainWindowCallback( HWND window,
-                    UINT message,
-                    WPARAM WParam,
-                    LPARAM LParam)
+MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
 {
     LRESULT result = 0;
 
@@ -43,10 +40,7 @@ MainWindowCallback( HWND window,
 
 //Applcation entry point
 int CALLBACK 
-WinMain(HINSTANCE   Instance,
-        HINSTANCE   prevInstance,
-        LPSTR       commandLine,
-        int         showCode)
+WinMain(HINSTANCE Instance, HINSTANCE prevInstance, LPSTR commandLine, int showCode)
 {
     WNDCLASS windowClass = {}; 
     
@@ -59,22 +53,35 @@ WinMain(HINSTANCE   Instance,
 
     if (RegisterClass(&windowClass))
     {
-        HWND windowHandle = CreateWindow(
+        HWND windowHandle = CreateWindowEx(
             0,
-            windowClass.lpfnWndProc = MainWindowCallback,
+            windowClass.lpszClassName,
             "CustomWindow",
             WS_OVERLAPPEDWINDOW|WS_VISIBLE,
-            CS_USEDEFAULT,
-            CS_USEDEFAULT,
-            CS_USEDEFAULT,
-            CS_USEDEFAULT,
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
             0,
             0,
             Instance,
             0);
         if (windowHandle)
         {
-            
+            MSG message;
+            // TODO(jarek): stand in
+            for (;;) 
+            {
+                BOOL messageResult = GetMessage(&message, 0, 0, 0);
+                if (messageResult > 0)
+                {
+
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
         else
         {
