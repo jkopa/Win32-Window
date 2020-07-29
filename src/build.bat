@@ -2,7 +2,11 @@
 
 IF NOT "%clset%"=="64" call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 
+set opt=-Zi
+set libs=user32.lib gdi32.lib
+set src=D:\Dev\Win32-Border\src\
+
 mkdir ..\build
 pushd ..\build
-cl -Zi D:\Dev\Win32-Border\src\win32_custom_window.cpp user32.lib gdi32.lib
+cl %opt% %src%win32_custom_window.cpp %libs% -Fecustom_window
 popd

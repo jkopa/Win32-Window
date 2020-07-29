@@ -49,33 +49,22 @@ MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
 
 
 //Applcation entry point
-int CALLBACK 
-WinMain(HINSTANCE Instance, HINSTANCE prevInstance, LPSTR commandLine, int showCode)
+int CALLBACK
+WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showCode)
 {
     WNDCLASS windowClass = {}; 
     
     // TODO(jarek): Double check what flags are actually necessary 
     windowClass.style = CS_OWNDC|CS_HREDRAW|CS_VREDRAW;
     windowClass.lpfnWndProc = MainWindowCallback;
-    windowClass.hInstance = Instance; 
+    windowClass.hInstance = instance; 
     //windowClass.hIcon; //will add icon later on, leave commented for the time being
     windowClass.lpszClassName = "CustomWindowClass";
 
     if (RegisterClass(&windowClass))
     {
-        HWND windowHandle = CreateWindowEx(
-            0,
-            windowClass.lpszClassName,
-            "CustomWindow",
-            WS_OVERLAPPEDWINDOW|WS_VISIBLE,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
-            0,
-            0,
-            Instance,
-            0);
+        HWND windowHandle = CreateWindowEx(0, windowClass.lpszClassName, "CustomWindow", WS_OVERLAPPEDWINDOW|WS_VISIBLE, 
+                                        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, instance, 0);
         if (windowHandle)
         {
             MSG message;
@@ -85,7 +74,7 @@ WinMain(HINSTANCE Instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
                 BOOL messageResult = GetMessage(&message, 0, 0, 0);
                 if (messageResult > 0)
                 {
-
+                    OutputDebugStringA("success");
                 }
                 else
                 {
@@ -102,6 +91,5 @@ WinMain(HINSTANCE Instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
     {
         // TODO(jarek): log error!
     }
-
     return 0;
 }
