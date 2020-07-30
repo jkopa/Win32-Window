@@ -14,26 +14,27 @@ MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
         {
             keepRunning = 0;
             OutputDebugStringA("WM_QUIT\n");
-        } break;
+        }break;
         case WM_SIZE:
         {
             OutputDebugStringA("WM_SIZE\n");
-        } break;
+        }break;
         case WM_DESTROY:
         {
             OutputDebugStringA("WM_DESTROY\n");
-        } break;
+        }break;
         case WM_CLOSE:
         {
+            keepRunning = 0;
             OutputDebugStringA("WM_CLOSE\n");
-        } break;
+        }break;
         case WM_ACTIVATEAPP:
         {
             OutputDebugStringA("WM_ACTIVATEAPP\n");
         }break;
         case WM_PAINT:
         {
-            // TODO(jarek):research PatBlt()
+            // TODO(jarek):research PatBlt()... I have no clue what it actually does
             PAINTSTRUCT paint;
             HDC deviceConstext = BeginPaint(window, &paint);
             LONG x = paint.rcPaint.left;
@@ -80,6 +81,10 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
                 MSG message;
                 GetMessage(&message, 0, 0, 0);
                 DispatchMessage(&message);
+                if (keepRunning == 0)
+                {
+                    return 0;
+                }
             }
         }
         else
@@ -93,3 +98,4 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
     }
     return 0;
 }
+//end of program
