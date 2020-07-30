@@ -1,6 +1,6 @@
 #include <windows.h>
 
-int keepRunning; //temp fix 
+int keepRunning;
 
 LRESULT CALLBACK
 MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
@@ -58,7 +58,7 @@ MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
 int CALLBACK
 WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showCode)
 {
-    WNDCLASS windowClass = {}; 
+    WNDCLASS windowClass = {0}; 
     
     // TODO(jarek): Double check what flags are actually necessary 
     windowClass.style = CS_OWNDC|CS_HREDRAW|CS_VREDRAW;
@@ -73,8 +73,7 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
                                            CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, instance, 0);
         if (windowHandle)
         {
-            keepRunning = 1; //temp fix
-            
+            keepRunning = 1;
             // TODO(jarek): stand in
             for (;keepRunning;) 
             {

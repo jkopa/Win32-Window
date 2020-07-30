@@ -8,5 +8,5 @@ set libs=user32.lib gdi32.lib
 set src=D:\Dev\Win32-Border\src\
 
 pushd build
-cl %opt% ..\src\win32_custom_window.cpp %libs% -Fecustom_window
+cl %opt% ..\src\win32_custom_window.c %libs% -Fecustom_window
 popd
