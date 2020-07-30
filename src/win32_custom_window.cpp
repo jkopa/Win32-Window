@@ -1,5 +1,7 @@
 #include <windows.h>
 
+int keepRunning; //temp fix 
+
 LRESULT CALLBACK
 MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
 {
@@ -8,6 +10,11 @@ MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
     // TODO(jarek): WIP case statements to handle messages from windows
     switch(message)
     {
+        case WM_QUIT:
+        {
+            keepRunning = 0;
+            OutputDebugStringA("WM_QUIT\n");
+        } break;
         case WM_SIZE:
         {
             OutputDebugStringA("WM_SIZE\n");
@@ -32,12 +39,11 @@ MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
             LONG x = paint.rcPaint.left;
             LONG y = paint.rcPaint.top;
             LONG height = paint.rcPaint.bottom - paint.rcPaint.top;
-            LONG width = paint.rcPaint.right -paint.rcPaint.left;
+            LONG width = paint.rcPaint.right - paint.rcPaint.left;
             PatBlt(deviceConstext, x, y, width, height, BLACKNESS);
             EndPaint(window, &paint);
             OutputDebugStringA("WM_PAINT\n");
         }break;
-        
         default:
         {
             //OutputDebugStringA("Default\n");
@@ -52,7 +58,7 @@ MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
 int CALLBACK
 WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showCode)
 {
-    WNDCLASS windowClass = {0}; 
+    WNDCLASS windowClass = {}; 
     
     // TODO(jarek): Double check what flags are actually necessary 
     windowClass.style = CS_OWNDC|CS_HREDRAW|CS_VREDRAW;
@@ -67,19 +73,14 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
                                            CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, instance, 0);
         if (windowHandle)
         {
-            MSG message;
+            keepRunning = 1; //temp fix
+            
             // TODO(jarek): stand in
-            for (;;) 
+            for (;keepRunning;) 
             {
-                BOOL messageResult = GetMessage(&message, 0, 0, 0);
-                if (messageResult > 0)
-                {
-                    OutputDebugStringA("success");
-                }
-                else
-                {
-                    break;
-                }
+                MSG message;
+                GetMessage(&message, 0, 0, 0);
+                DispatchMessage(&message);
             }
         }
         else
