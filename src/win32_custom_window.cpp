@@ -4,8 +4,8 @@ LRESULT CALLBACK
 MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
 {
     LRESULT result = 0;
-
-// TODO(jarek): WIP case statements to handle messages from windows
+    
+    // TODO(jarek): WIP case statements to handle messages from windows
     switch(message)
     {
         case WM_SIZE:
@@ -37,7 +37,7 @@ MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
             EndPaint(window, &paint);
             OutputDebugStringA("WM_PAINT\n");
         }break;
-
+        
         default:
         {
             //OutputDebugStringA("Default\n");
@@ -52,7 +52,7 @@ MainWindowCallback(HWND window, UINT message, WPARAM WParam, LPARAM LParam)
 int CALLBACK
 WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showCode)
 {
-    WNDCLASS windowClass = {}; 
+    WNDCLASS windowClass = {0}; 
     
     // TODO(jarek): Double check what flags are actually necessary 
     windowClass.style = CS_OWNDC|CS_HREDRAW|CS_VREDRAW;
@@ -60,11 +60,11 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
     windowClass.hInstance = instance; 
     //windowClass.hIcon; //will add icon later on, leave commented for the time being
     windowClass.lpszClassName = "CustomWindowClass";
-
+    
     if (RegisterClass(&windowClass))
     {
         HWND windowHandle = CreateWindowEx(0, windowClass.lpszClassName, "CustomWindow", WS_OVERLAPPEDWINDOW|WS_VISIBLE, 
-                                        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, instance, 0);
+                                           CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, instance, 0);
         if (windowHandle)
         {
             MSG message;
