@@ -1,4 +1,6 @@
 #include <windows.h>
+#include <stdio.h>
+#include <vulkan/vulkan.h>
 
 int keepRunning;
 
@@ -70,8 +72,11 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
     
     if (RegisterClass(&windowClass))
     {
-        HWND windowHandle = CreateWindowEx(0, windowClass.lpszClassName, "CustomWindow", WS_OVERLAPPEDWINDOW|WS_VISIBLE, 
-                                           CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, instance, 0);
+        HWND windowHandle = CreateWindowEx(0, windowClass.lpszClassName, 
+                                           "Custom Window", WS_OVERLAPPEDWINDOW|WS_VISIBLE, 
+                                           CW_USEDEFAULT, CW_USEDEFAULT, 
+                                           CW_USEDEFAULT, CW_USEDEFAULT, 
+                                           0, 0, instance, 0);
         if (windowHandle)
         {
             keepRunning = 1;
@@ -83,18 +88,18 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
                 DispatchMessage(&message);
                 if (keepRunning == 0)
                 {
-                    return 0;
+                    exit(1);
                 }
             }
         }
         else
         {
-            // TODO(jarek): log error!
+            fprintf(stderr, "Create window failed!\n");
         }
     }
     else
     {
-        // TODO(jarek): log error!
+        fprintf(stderr, "Register window class failed!\n");
     }
     return 0;
 }
