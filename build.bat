@@ -17,13 +17,11 @@ IF NOT EXIST bin mkdir bin
 IF NOT "%clset%"=="64" call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 
 ::Step 3
-set addlib=/I %VULKAN_SDK%\Include
-set opt=-Zi
+set opt=/Zi
 set libs=user32.lib gdi32.lib kernel32.lib
-set src=D:\Dev\Win32-Border\src\
 
 ::Step 4
 pushd build
-cl /I %VULKAN_SDK%\Include %opt% ..\src\win32_custom_window.c %libs% -Fecustom_window
+cl /I -Zi %opt% ..\src\win32_custom_window.cpp %libs% -Fecustom_window
 MOVE /Y custom_window.exe ..\bin
 popd
