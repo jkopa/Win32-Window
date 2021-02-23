@@ -110,13 +110,15 @@ WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLine, int ShowC
         else
         {
             //TODO Logging
-            fprintf(stderr, "Create Window failed!\n");
+            MessageBoxA(0, "Error", "Create window failed!",
+                MB_OK|MB_ICONINFORMATION);   
         }
     }
     else
     {
         //TODO Logging
-        fprintf(stderr, "Register Window class failed!\n");
+        MessageBoxA(0, "Error", "Create window class failed!",
+                MB_OK|MB_ICONINFORMATION);
     }
     return 0;
 }
