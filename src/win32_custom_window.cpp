@@ -1,5 +1,11 @@
 #include <windows.h>
-#include <stdio.h>
+
+#define internal static
+#define local_persist static
+#define global_variable static
+
+// TODO This is temporarily global
+global_variable bool Running;
 
 LRESULT CALLBACK
 MainWindowCallback(HWND Window, UINT Message, WPARAM WParam, LPARAM LParam)
@@ -11,7 +17,7 @@ MainWindowCallback(HWND Window, UINT Message, WPARAM WParam, LPARAM LParam)
     {
     case WM_QUIT:
     {
-        PostQuitMessage(0);
+        Running = false;
         OutputDebugStringA("WM_QUIT\n");
     }
     break;
@@ -22,12 +28,13 @@ MainWindowCallback(HWND Window, UINT Message, WPARAM WParam, LPARAM LParam)
     break;
     case WM_DESTROY:
     {
+        Running = false;
         OutputDebugStringA("WM_DESTROY\n");
     }
     break;
     case WM_CLOSE:
     {
-        PostQuitMessage(0);
+        Running = false;
         OutputDebugStringA("WM_CLOSE\n");
     }
     break;
@@ -91,7 +98,7 @@ WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLine, int ShowC
         if (WindowHandle)
         {
             MSG Message;
-            for (;;)
+            while(Running)
             {
                 
                 BOOL MessageResult = GetMessage(&Message, 0, 0, 0);
