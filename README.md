@@ -1,8 +1,8 @@
 # Win32-Border
-Custom window frame example code for Win32 c/c++ applications
+Template for custom window for Win32 c/c++ applications
 
 ## Purpose
-Mostly learning how to create custom windows from MSDN on windows systems. Create a basic template that can be used for a compatibility layer for windows specific functions in an application.
+The purpose is to learn and understand the windows API and to produce a generic template that can be used for all future projects.
 
 ## Building
-This small program is build with a simple bat file that uses the visual studio 2019 cl compiler. you can set this to where you compiler is located or create your own build file as you like it. 
+This is not intended to be a stand alone application so it is build using a simple set of scripts that do the job just fine. In order to compile it using the script you must have Microsoft Visual Studio 2019 Community edition installed. otherwise you can build it however you like.
