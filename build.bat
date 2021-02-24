@@ -22,6 +22,6 @@ set libs=user32.lib gdi32.lib kernel32.lib
 
 ::Step 4
 pushd build
-cl /I -Zi %opt% ..\src\win32_custom_window.cpp %libs% -Fecustom_window
-MOVE /Y custom_window.exe ..\bin
+cl -Zi ..\src\win32_custom_window.cpp user32.lib gdi32.lib kernel32.lib -Fecustom_window
+::MOVE /Y custom_window.exe ..\bin
 popd

@@ -1,4 +1,4 @@
 @echo off
-pushd bin
+pushd build
 custom_window.exe
 popd
