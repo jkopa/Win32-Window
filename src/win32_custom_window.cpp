@@ -186,11 +186,10 @@ WinMain(HINSTANCE Instance,
 
         if (WindowHandle)
         {
-            MSG Message;
             while(Running)
             {
+                MSG Message;
                 BOOL MessageResult = GetMessage(&Message, 0, 0, 0);
-                DispatchMessage(&Message);
                 if(MessageResult > 0)
                 {
                     TranslateMessage(&Message);
