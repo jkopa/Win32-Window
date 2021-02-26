@@ -4,24 +4,20 @@
 #define local_persist static
 #define global_variable static
 
-// TODO This is temporarily global
+// TODO(jarek): This is temporarily global
 global_variable bool Running;
 
 global_variable BITMAPINFO BitmapInfo;
 global_variable void *BitmapMemory;
-global_variable HBITMAP BitmapHandle;
-global_variable HDC BitmapDeviceContext;
 
 internal void
 Win32ResizeDIBSection(int Width, int Height)
 {
-    if(BitmapHandle)
+    /* TODO(jarek): Review this, potentially dont free it first. 
+    free after or free first if that fails*/
+    if(BitmapMemory)
     {
-        DeleteObject(BitmapHandle);
-    }
-    if(!BitmapDeviceContext)
-    {
-        BitmapDeviceContext = CreateCompatibleDC(0);
+        VirtualFree(BitmapMemory, 0, MEM_RELEASE);
     }
 
     BitmapInfo.bmiHeader.biSize = sizeof(BitmapInfo.bmiHeader);
@@ -31,13 +27,10 @@ Win32ResizeDIBSection(int Width, int Height)
     BitmapInfo.bmiHeader.biBitCount = 32;
     BitmapInfo.bmiHeader.biCompression = BI_RGB;
 
-    HDC DeviceContext = CreateCompatibleDC(0);
-    BitmapHandle = CreateDIBSection(
-        DeviceContext, &BitmapInfo,
-        DIB_RGB_COLORS, &BitmapMemory,
-        0, 0);
+    int BytesPerPixel = 4;
+    int BitmapMemorySize = (Width*Height)*BytesPerPixel;
+    BitmapMemory = VirtualAlloc(0, BitmapMemorySize, MEM_COMMIT, PAGE_READWRITE);
 
-    ReleaseDC(0, DeviceContext);
 }
 
 internal void
@@ -52,14 +45,13 @@ Win32UpdateWindow(HDC DeviceContext, int X, int Y, int Width, int Height)
 }
 
 
-LRESULT CALLBACK
+LRESULT CALLBACK 
 Win32MainWindowCallback(HWND Window,
                         UINT Message,
                         WPARAM WParam,
                         LPARAM LParam)
 {
     LRESULT Result = 0;
-
     // TODO(jarek): WIP case statements to handle messages from windows
     switch (Message)
     {
@@ -148,7 +140,6 @@ WinMain(HINSTANCE Instance,
             MSG Message;
             while(Running)
             {
-                
                 BOOL MessageResult = GetMessage(&Message, 0, 0, 0);
                 DispatchMessage(&Message);
                 if(MessageResult > 0)
@@ -164,14 +155,14 @@ WinMain(HINSTANCE Instance,
         }
         else
         {
-            //TODO Logging
+            //TODO(jarek): Logging
             MessageBoxA(0, "Error", "Create window failed!",
                 MB_OK|MB_ICONINFORMATION);   
         }
     }
     else
     {
-        //TODO Logging
+        //TODO(jarek): Logging
         MessageBoxA(0, "Error", "Create window class failed!",
                 MB_OK|MB_ICONINFORMATION);
     }
