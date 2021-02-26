@@ -35,22 +35,13 @@ RenderGradiant(int XOffset, int YOffset)
     uint8 *Row = (uint8 *)BitmapMemory;
     for(int Y = 0; Y < BitmapHeight; ++Y)
     {
-        uint8 *Pixel = (uint8 *)Row;
+        uint32 *Pixel = (uint32 *)Row;
         for(int X = 0; X < BitmapWidth; ++X)
         {
+            uint8 Blue = (X + XOffset);
+            uint8 Green = (Y + YOffset);
             //Blue channel
-            *Pixel = (uint8)(Y + YOffset);
-            ++Pixel;
-            //Green channel
-            *Pixel = 0;
-            ++Pixel;
-            //Red channel
-            *Pixel = (uint8)(X + XOffset);
-            ++Pixel;
-            //Padding
-            *Pixel = 0;
-            ++Pixel;
-
+            *Pixel++ = ((Green << 8) | Blue);    
         }
         Row += Pitch;
     }
