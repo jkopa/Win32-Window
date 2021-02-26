@@ -22,6 +22,39 @@ global_variable BITMAPINFO BitmapInfo;
 global_variable void *BitmapMemory;
 global_variable int BitmapWidth;
 global_variable int BitmapHeight;
+global_variable int BytesPerPixel = 4;
+
+internal void
+RenderGradiant(int XOffset, int YOffset)
+{
+    int Width = BitmapWidth;
+    int Height = BitmapHeight;
+
+
+    int Pitch = Width*BytesPerPixel;
+    uint8 *Row = (uint8 *)BitmapMemory;
+    for(int Y = 0; Y < BitmapHeight; ++Y)
+    {
+        uint8 *Pixel = (uint8 *)Row;
+        for(int X = 0; X < BitmapWidth; ++X)
+        {
+            //Blue channel
+            *Pixel = (uint8)(Y + YOffset);
+            ++Pixel;
+            //Green channel
+            *Pixel = 0;
+            ++Pixel;
+            //Red channel
+            *Pixel = (uint8)(X + XOffset);
+            ++Pixel;
+            //Padding
+            *Pixel = 0;
+            ++Pixel;
+
+        }
+        Row += Pitch;
+    }
+}
 
 internal void
 Win32ResizeDIBSection(int Width, int Height)
@@ -43,40 +76,16 @@ Win32ResizeDIBSection(int Width, int Height)
     BitmapInfo.bmiHeader.biBitCount = 32;
     BitmapInfo.bmiHeader.biCompression = BI_RGB;
 
-    int BytesPerPixel = 4;
     int BitmapMemorySize = (Width*Height)*BytesPerPixel;
     BitmapMemory = VirtualAlloc(0, BitmapMemorySize, MEM_COMMIT, PAGE_READWRITE);
 
-    int Pitch = Width*BytesPerPixel;
-    uint8 *Row = (uint8 *)BitmapMemory;
-    for(int Y = 0; Y < BitmapHeight; ++Y)
-    {
-        uint8 *Pixel = (uint8 *)Row;
-        for(int X = 0; X < BitmapWidth; ++X)
-        {
-            //Blue channel
-            *Pixel = (uint8)X;
-            ++Pixel;
-            //Green channel
-            *Pixel = (uint8)Y;
-            ++Pixel;
-            //Red channel
-            *Pixel = 0;
-            ++Pixel;
-            //Padding
-            *Pixel = 0;
-            ++Pixel;
-
-        }
-        Row += Pitch;
-    }
 }
 
 internal void
-Win32UpdateWindow(HDC DeviceContext, RECT *WindowRect, int X, int Y, int Width, int Height)
+Win32UpdateWindow(HDC DeviceContext, RECT *ClientRect, int X, int Y, int Width, int Height)
 {
-    int WindowWidth = WindowRect->right - WindowRect->left;
-    int WindowHeight = WindowRect->bottom - WindowRect->top;
+    int WindowWidth = ClientRect->right - ClientRect->left;
+    int WindowHeight = ClientRect->bottom - ClientRect->top;
     StretchDIBits(DeviceContext,
                   /*
                   X, Y, Width, Height,
@@ -169,7 +178,7 @@ WinMain(HINSTANCE Instance,
     WindowClass.lpszClassName = __TEXT("CustomWindowClass");
     if (RegisterClass(&WindowClass))
     {
-        HWND WindowHandle =
+        HWND Window =
             CreateWindowEx(
                 0,
                 WindowClass.lpszClassName,
@@ -184,8 +193,10 @@ WinMain(HINSTANCE Instance,
                 Instance,
                 0);
 
-        if (WindowHandle)
+        if (Window)
         {
+            int XOffset = 0;
+            int YOffset = 0;
             while(Running)
             {
                 MSG Message;
@@ -198,6 +209,19 @@ WinMain(HINSTANCE Instance,
                     TranslateMessage(&Message);
                     DispatchMessage(&Message);
                 }
+
+                RenderGradiant(XOffset, YOffset);
+
+                HDC DeviceContext = GetDC(Window);
+                RECT ClientRect;
+                GetClientRect(Window, &ClientRect);
+                int WindowWidth = ClientRect.right - ClientRect.left;
+                int WindowHeight = ClientRect.bottom - ClientRect.top;
+                Win32UpdateWindow(DeviceContext, &ClientRect, 0, 0, WindowWidth, WindowHeight);
+                ReleaseDC(Window, DeviceContext);
+                
+                ++XOffset;
+                ++YOffset;
             }
         }
         else
