@@ -11,7 +11,7 @@
 
 ::Step 1
 IF NOT EXIST build mkdir build
-IF NOT EXIST bin mkdir bin
+
 
 ::Step 2
 IF NOT "%clset%"=="64" call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
