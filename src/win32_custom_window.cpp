@@ -12,7 +12,6 @@ struct win32_offscreen_buffer
     int Width;
     int Height;
     int Pitch;
-    int BytesPerPixel;
 };
 
 struct win32_window_dimensions
@@ -34,11 +33,12 @@ win32_window_dimensions Win32GetWindowDimension(HWND Window)
 }
 
 // TODO(jarek): This is temporarily global
-global_variable bool Running;
+global_variable bool GlobalRunning;
 global_variable win32_offscreen_buffer GlobalBackBuffer;
 
 
-internal void RenderGradiant(win32_offscreen_buffer *Buffer, int BlueOffset, int GreenOffset)
+internal void
+RenderGradiant(win32_offscreen_buffer *Buffer, int BlueOffset, int GreenOffset)
 {
     uint8_t *Row = (uint8_t *)Buffer->Memory;
     for(int Y = 0; Y < Buffer->Height; ++Y)
@@ -49,13 +49,14 @@ internal void RenderGradiant(win32_offscreen_buffer *Buffer, int BlueOffset, int
             uint8_t Blue = (X + BlueOffset);
             uint8_t Green = (Y + GreenOffset);
             //Blue channel
-            *Pixel++ = ((Green << 8) | Blue);    
+            *Pixel++ = ((Green << 8) | Blue);
         }
         Row += Buffer->Pitch;
     }
 }
 
-internal void Win32ResizeDIBSection(win32_offscreen_buffer *Buffer, int Width, int Height)
+internal void
+Win32ResizeDIBSection(win32_offscreen_buffer *Buffer, int Width, int Height)
 {
     /* TODO(jarek): Review this, potentially dont free it first. 
     free after or free first if that fails*/
@@ -66,37 +67,35 @@ internal void Win32ResizeDIBSection(win32_offscreen_buffer *Buffer, int Width, i
 
     Buffer->Width = Width;
     Buffer->Height = Height;
-    Buffer->BytesPerPixel = 4;
-
+    int BytesPerPixel = 4;
+    // NOTE(jarek): When windows receives a negative value for bmiHeader.biWidth it will draw from top-left instead
+    // of the default which is bottom left
     Buffer->Info.bmiHeader.biSize = sizeof(Buffer->Info.bmiHeader);
     Buffer->Info.bmiHeader.biWidth = Buffer->Width;
-    Buffer->Info.bmiHeader.biHeight = -Buffer->Height; // NOTE(jarek): a negative value will make StretchDIBits() to have its origin in the top left corner.
+    Buffer->Info.bmiHeader.biHeight = -Buffer->Height; 
     Buffer->Info.bmiHeader.biPlanes = 1;
     Buffer->Info.bmiHeader.biBitCount = 32;
     Buffer->Info.bmiHeader.biCompression = BI_RGB;
 
-    int BitmapMemorySize = (Buffer->Width*Buffer->Height)*Buffer->BytesPerPixel;
+    int BitmapMemorySize = (Buffer->Width*Buffer->Height)*BytesPerPixel;
     Buffer->Memory = VirtualAlloc(0, BitmapMemorySize, MEM_COMMIT, PAGE_READWRITE);
  
-    Buffer->Pitch = Width*Buffer->BytesPerPixel;
+    Buffer->Pitch = Width*BytesPerPixel;
 }
 
-internal void Win32DisplayBufferInWindow(HDC DeviceContext, int WindowWidth, int WindowHeight, win32_offscreen_buffer *Buffer, int X, int Y, int Width, int Height)
+internal void
+Win32DisplayBufferInWindow(HDC DeviceContext, int WindowWidth, int WindowHeight, win32_offscreen_buffer *Buffer)
 {
         StretchDIBits(DeviceContext, 0, 0, WindowWidth, WindowHeight, 0, 0, Buffer->Width, Buffer->Height, Buffer->Memory, &Buffer->Info, DIB_RGB_COLORS, SRCCOPY);
 }
 
-LRESULT CALLBACK Win32MainWindowCallback(HWND Window, UINT Message, WPARAM WParam, LPARAM LParam)
+LRESULT CALLBACK
+Win32MainWindowCallback(HWND Window, UINT Message, WPARAM WParam, LPARAM LParam)
 {
     LRESULT Result = 0;
     // TODO(jarek): WIP case statements to handle messages from windows
     switch (Message)
     {
-        case WM_QUIT:
-        {
-            Running = false;
-            OutputDebugStringA("WM_QUIT\n");
-        }break;
         case WM_SIZE:
         {
         }break;
@@ -111,17 +110,17 @@ LRESULT CALLBACK Win32MainWindowCallback(HWND Window, UINT Message, WPARAM WPara
             
             win32_window_dimensions Dimension = Win32GetWindowDimension(Window);
 
-            Win32DisplayBufferInWindow(DeviceContext, Dimension.Width, Dimension.Height, &GlobalBackBuffer, X, Y, Width, Height);
+            Win32DisplayBufferInWindow(DeviceContext, Dimension.Width, Dimension.Height, &GlobalBackBuffer);
             EndPaint(Window, &Paint);
         }break;
         case WM_DESTROY:
         {
-            Running = false;
+            GlobalRunning = false;
             OutputDebugStringA("WM_DESTROY\n");
         }break;
         case WM_CLOSE:
         {
-            Running = false;
+            GlobalRunning = false;
             OutputDebugStringA("WM_CLOSE\n");
         }break;
         case WM_ACTIVATEAPP:
@@ -136,7 +135,8 @@ LRESULT CALLBACK Win32MainWindowCallback(HWND Window, UINT Message, WPARAM WPara
 }
 
 //Applcation entry point
-int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLine, int ShowCode)
+int CALLBACK
+WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLine, int ShowCode)
 {
     WNDCLASS WindowClass = {};
 
@@ -158,15 +158,15 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLi
             int BlueOffset = 0;
             int GreenOffset = 0;
 
-            Running = true;
-            while(Running)
+            GlobalRunning = true;
+            while(GlobalRunning)
             {
                 MSG Message;
                 while(PeekMessage(&Message, 0, 0, 0, PM_REMOVE))
                 {
                     if(Message.message == WM_QUIT)
                     {
-                        Running = false;
+                        GlobalRunning = false;
                     }
                     TranslateMessage(&Message);
                     DispatchMessage(&Message);
@@ -177,7 +177,7 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLi
                 HDC DeviceContext = GetDC(Window);
 
                 win32_window_dimensions Dimension = Win32GetWindowDimension(Window);
-                Win32DisplayBufferInWindow(DeviceContext, Dimension.Width, Dimension.Height, &GlobalBackBuffer, 0, 0, Dimension.Height, Dimension.Height);
+                Win32DisplayBufferInWindow(DeviceContext, Dimension.Width, Dimension.Height, &GlobalBackBuffer);
                 ReleaseDC(Window, DeviceContext);
                 
                 ++BlueOffset;
