@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <stdint.h>
+#include <xinput.h>
 
 #define internal static
 #define local_persist static
@@ -170,6 +171,19 @@ WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLine, int ShowC
                     }
                     TranslateMessage(&Message);
                     DispatchMessage(&Message);
+                }
+
+                for (DWORD ControllerIndex = 0; ControllerIndex < XUSER_MAX_COUNT; ++ControllerIndex)
+                {
+                    XINPUT_STATE ControllerState;
+                    if(XInputGetState(ControllerIndex, &ControllerState) == ERROR_SUCCESS)
+                    {
+                            
+                    }
+                    else
+                    {
+                        // TODO(jarek): Handle case where controller is not plugged in
+                    }
                 }
 
                 RenderGradiant(&GlobalBackBuffer, BlueOffset, GreenOffset);
