@@ -2,3 +2,6 @@
 .vscode
 /build
 /bin
+
+run.bat
+debug.bat
