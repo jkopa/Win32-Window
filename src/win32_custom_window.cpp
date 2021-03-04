@@ -1,5 +1,7 @@
 #include <windows.h>
 #include <stdint.h>
+#include <xinput.h>
+//#include <assert.h>
 
 #define internal static
 #define local_persist static
@@ -20,7 +22,42 @@ struct win32_window_dimensions
     int Height;
 };
 
-win32_window_dimensions Win32GetWindowDimension(HWND Window)
+// NOTE(jarek): Support for XInputGetState
+#define X_INPUT_GET_STATE(name) DWORD WINAPI name(DWORD dwUserIndex, XINPUT_STATE *pState)
+typedef X_INPUT_GET_STATE(x_input_get_state);
+
+X_INPUT_GET_STATE(XInputGetStateStub)
+{
+    return(0);
+}
+
+global_variable x_input_get_state *XInputGetState_ = XInputGetStateStub;
+#define XInputGetState XInputGetState_
+
+// NOTE(jarek): Support for XInputSetState
+#define X_INPUT_SET_STATE(name) DWORD WINAPI name(DWORD dwUserIndex, XINPUT_STATE *pVibration)
+typedef X_INPUT_SET_STATE(x_input_set_state);
+
+X_INPUT_SET_STATE(XInputSetStateStub)
+{
+    return(0);
+}
+
+global_variable x_input_set_state *XInputSetState_ = XInputSetStateStub;
+#define XInputSetState XInputSetState_
+
+internal void
+Win32LoadXInput(void)
+{
+    HMODULE XInputLibrary = LoadLibraryA("xinput1_4.dll");
+    if(XInputLibrary)
+    {
+        XInputGetState = (x_input_get_state *)GetProcAddress(XInputLibrary, "XInputGetState");
+        XInputSetState = (x_input_set_state *)GetProcAddress(XInputLibrary, "XInputSetState");
+    }
+}
+
+internal win32_window_dimensions Win32GetWindowDimension(HWND Window)
 {
     win32_window_dimensions Result;
 
@@ -89,7 +126,7 @@ Win32DisplayBufferInWindow(HDC DeviceContext, int WindowWidth, int WindowHeight,
         StretchDIBits(DeviceContext, 0, 0, WindowWidth, WindowHeight, 0, 0, Buffer->Width, Buffer->Height, Buffer->Memory, &Buffer->Info, DIB_RGB_COLORS, SRCCOPY);
 }
 
-LRESULT CALLBACK
+internal LRESULT CALLBACK
 Win32MainWindowCallback(HWND Window, UINT Message, WPARAM WParam, LPARAM LParam)
 {
     LRESULT Result = 0;
@@ -138,6 +175,7 @@ Win32MainWindowCallback(HWND Window, UINT Message, WPARAM WParam, LPARAM LParam)
 int CALLBACK
 WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLine, int ShowCode)
 {
+    Win32LoadXInput();
     WNDCLASS WindowClass = {};
 
     Win32ResizeDIBSection(&GlobalBackBuffer, 1280, 720);
@@ -155,8 +193,8 @@ WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLine, int ShowC
         
         if (Window)
         {
-            int BlueOffset = 0;
-            int GreenOffset = 0;
+            int XOffset = 0;
+            int YOffset = 0;
 
             GlobalRunning = true;
             while(GlobalRunning)
@@ -172,7 +210,40 @@ WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLine, int ShowC
                     DispatchMessage(&Message);
                 }
 
-                RenderGradiant(&GlobalBackBuffer, BlueOffset, GreenOffset);
+                for (DWORD ControllerIndex = 0; ControllerIndex < XUSER_MAX_COUNT; ++ControllerIndex)
+                {
+                    XINPUT_STATE ControllerState;
+                    if(XInputGetState(ControllerIndex, &ControllerState) == ERROR_SUCCESS)
+                    {
+                        XINPUT_GAMEPAD *Pad = &ControllerState.Gamepad;
+
+                        bool DPadUp = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_UP);
+                        bool DPadDown = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_DOWN);
+                        bool DPadLeft = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_LEFT);
+                        bool DPadRight = (Pad->wButtons & XINPUT_GAMEPAD_DPAD_RIGHT);
+                        bool Start = (Pad->wButtons & XINPUT_GAMEPAD_START);
+                        bool Back = (Pad->wButtons & XINPUT_GAMEPAD_BACK);
+                        bool RightShoulder = (Pad->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER);
+                        bool AButton = (Pad->wButtons & XINPUT_GAMEPAD_A);
+                        bool BButton = (Pad->wButtons & XINPUT_GAMEPAD_B);
+                        bool XButton = (Pad->wButtons & XINPUT_GAMEPAD_X);
+                        bool YButton = (Pad->wButtons & XINPUT_GAMEPAD_Y);
+
+                        int16_t StickX = Pad->sThumbLX;
+                        int16_t StickY = Pad->sThumbLY;
+
+                        if(AButton)
+                        {
+                            YOffset += 2;
+                        }
+                    }
+                    else
+                    {
+                        // TODO(jarek): Handle case where controller is not plugged in or not available.
+                    }
+                }
+
+                RenderGradiant(&GlobalBackBuffer, XOffset, YOffset);
 
                 HDC DeviceContext = GetDC(Window);
 
@@ -180,8 +251,7 @@ WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLine, int ShowC
                 Win32DisplayBufferInWindow(DeviceContext, Dimension.Width, Dimension.Height, &GlobalBackBuffer);
                 ReleaseDC(Window, DeviceContext);
                 
-                ++BlueOffset;
-                ++GreenOffset;
+                ++XOffset;
             }
         }
         else
